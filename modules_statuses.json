@@ -1,0 +1,8 @@
+{
+    "Hasar": true,
+    "Authentication": true,
+    "User": true,
+    "Finance": true,
+    "Customer": true,
+    "Invoice": true
+}

@@ -1,0 +1,816 @@
+openapi: 3.0.0
+info:
+  title: FinanceFlow API
+  description: API for managing invoices, customers, and user settings for the FinanceFlow application.
+  version: 1.0.0
+servers:
+  - url: https://d5b9-2a00-1d36-404-6b00-d5fa-706b-c134-2130.ngrok-free.app
+    description: Development server
+
+tags:
+  - name: Authentication
+    description: Operations about user authentication
+  - name: Dashboard
+    description: Operations for the main dashboard
+  - name: Customers
+    description: Operations about customers
+  - name: Invoices
+    description: Operations about invoices
+  - name: User Profile
+    description: Operations about the current user's profile
+  - name: Settings
+    description: Operations about user settings
+
+paths:
+  /login:
+    post:
+      summary: User Login
+      tags:
+        - Authentication
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+                - password
+              properties:
+                email:
+                  type: string
+                  format: email
+                  example: "ahmet.yilmaz@example.com"
+                password:
+                  type: string
+                  format: password
+                  example: "password"
+      responses:
+        '200':
+          description: Successful login
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: "jwt.token.string"
+        '401':
+          description: Unauthorized
+
+  /logout:
+    post:
+      summary: User Logout
+      tags:
+        - Authentication
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Successful logout
+
+  /dashboard:
+    get:
+      summary: Get dashboard data
+      tags:
+        - Dashboard
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter data from this date.
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter data up to this date.
+      responses:
+        '200':
+          description: Aggregated dashboard data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  summary:
+                    $ref: '#/components/schemas/DashboardSummary'
+                  performanceChart:
+                    $ref: '#/components/schemas/PerformanceChartData'
+                  paymentMethodsChart:
+                    $ref: '#/components/schemas/PaymentMethodsChartData'
+
+  /customers:
+    get:
+      summary: Get all customers
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Fuzzy search term for customers.
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter customers created from this date (using createdAt field).
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter customers created up to this date (using createdAt field).
+      responses:
+        '200':
+          description: A list of customers
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Customer'
+    post:
+      summary: Create a new customer
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        '201':
+          description: Customer created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+  /customers/import:
+    post:
+      summary: Import customers from a file
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import status
+  /customers/export:
+    get:
+      summary: Export customers to a file
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ids
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+              format: email
+          description: Optional list of customer emails to export. If not provided, all customers will be exported.
+      responses:
+        '200':
+          description: Customer data file (e.g., CSV)
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /customers/{customerId}:
+    parameters:
+      - name: customerId
+        in: path
+        required: true
+        description: The email of the customer to retrieve.
+        schema:
+          type: string
+          format: email
+    get:
+      summary: Get a customer by ID (email)
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Customer details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+    put:
+      summary: Update a customer
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CustomerInput'
+      responses:
+        '200':
+          description: Customer updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Customer'
+        '404':
+          description: Customer not found
+    delete:
+      summary: Delete a customer
+      tags:
+        - Customers
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Customer deleted
+        '404':
+          description: Customer not found
+
+  /invoices:
+    get:
+      summary: Get all invoices
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: search
+          in: query
+          schema:
+            type: string
+          description: Fuzzy search term for invoices.
+        - name: startDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter invoices with due date from this date.
+        - name: endDate
+          in: query
+          schema:
+            type: string
+            format: date
+          description: Filter invoices with due date up to this date.
+      responses:
+        '200':
+          description: A list of invoices
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Invoice'
+    post:
+      summary: Create a new invoice
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceInput'
+      responses:
+        '201':
+          description: Invoice created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+  /invoices/import:
+    post:
+      summary: Import invoices from a file
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: Import status
+  /invoices/export:
+    get:
+      summary: Export invoices to a file
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: ids
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            items:
+              type: string
+          description: Optional list of invoice numbers to export. If not provided, all invoices will be exported.
+      responses:
+        '200':
+          description: Invoice data file (e.g., CSV)
+          content:
+            text/csv:
+              schema:
+                type: string
+
+  /invoices/{invoiceNo}:
+    parameters:
+      - name: invoiceNo
+        in: path
+        required: true
+        schema:
+          type: string
+          example: 'INV-001'
+    get:
+      summary: Get an invoice by number
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: Invoice details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Invoice not found
+    put:
+      summary: Update an invoice
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/InvoiceUpdateInput'
+      responses:
+        '200':
+          description: Invoice updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Invoice'
+        '404':
+          description: Invoice not found
+    delete:
+      summary: Delete an invoice
+      tags:
+        - Invoices
+      security:
+        - bearerAuth: []
+      responses:
+        '204':
+          description: Invoice deleted
+        '404':
+          description: Invoice not found
+
+  /profile:
+    get:
+      summary: Get user profile
+      tags:
+        - User Profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+    put:
+      summary: Update user profile
+      tags:
+        - User Profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfileInput'
+      responses:
+        '200':
+          description: Profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+
+  /settings/change-password:
+    post:
+      summary: Change user password
+      tags:
+        - Settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - currentPassword
+                - newPassword
+              properties:
+                currentPassword:
+                  type: string
+                newPassword:
+                  type: string
+      responses:
+        '200':
+          description: Password changed successfully
+        '400':
+          description: Bad request (e.g., incorrect current password)
+
+  /settings/permissions:
+    get:
+      summary: Get module permissions
+      tags:
+        - Settings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of module permissions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Permission'
+    put:
+      summary: Update module permissions
+      tags:
+        - Settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Permission'
+      responses:
+        '200':
+          description: Permissions updated successfully
+
+  /settings/groups:
+    get:
+      summary: Get user groups
+      tags:
+        - Settings
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: A list of user groups
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Group'
+    put:
+      summary: Update user groups
+      tags:
+        - Settings
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items:
+                $ref: '#/components/schemas/Group'
+      responses:
+        '200':
+          description: Groups updated successfully
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    DashboardSummary:
+      type: object
+      properties:
+        pending:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: float
+            count:
+              type: integer
+        paid:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: float
+            count:
+              type: integer
+        overdue:
+          type: object
+          properties:
+            amount:
+              type: number
+              format: float
+            count:
+              type: integer
+    PerformanceChartData:
+      type: array
+      items:
+        type: object
+        properties:
+          status:
+            type: string
+            enum: [Pending, Paid, Overdue]
+          total:
+            type: number
+            format: float
+    PaymentMethodsChartData:
+      type: array
+      items:
+        type: object
+        properties:
+          name:
+            type: string
+            enum: [Credit Card, PayPal, Bank Transfer]
+          count:
+            type: integer
+    Customer:
+      type: object
+      properties:
+        customerType:
+          type: string
+          enum: [Bireysel, Kurumsal]
+        name:
+          type: string
+          description: The individual's first name or the company's name.
+          example: 'Ahmet'
+        surname:
+          type: string
+          description: The individual's last name. Not applicable for corporate customers.
+          example: 'Yılmaz'
+        email:
+          type: string
+          format: email
+          description: The unique identifier for a customer.
+          example: 'ahmet.yilmaz@example.com'
+        phone:
+          type: string
+          example: '(555) 0101'
+        address:
+          type: string
+          example: 'Yıldız Mah. Çırağan Cad. No:1, Beşiktaş, İstanbul'
+        createdAt:
+          type: string
+          format: date
+          example: '2023-01-15'
+        tckn:
+          type: string
+          description: Turkish Identification Number for individual customers. Must be 11 digits.
+          example: '12345678901'
+        vkn:
+          type: string
+          description: Tax Identification Number for corporate customers. Must be 10 digits.
+          example: '1112223334'
+    CustomerInput:
+      type: object
+      required:
+        - customerType
+        - name
+        - email
+        - phone
+        - address
+      properties:
+        customerType:
+          type: string
+          enum: [Bireysel, Kurumsal]
+        name:
+          type: string
+        surname:
+          type: string
+          description: Required for Bireysel customers.
+        email:
+          type: string
+          format: email
+        phone:
+          type: string
+        address:
+          type: string
+        tckn:
+          type: string
+          description: Required for Bireysel customers.
+        vkn:
+          type: string
+          description: Required for Kurumsal customers.
+    Invoice:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Customer's first name or company name. Denormalized for display."
+          example: 'Ahmet'
+        surname:
+          type: string
+          description: "Customer's surname. Denormalized for display."
+          example: 'Yılmaz'
+        invoiceNo:
+          type: string
+          example: 'INV-001'
+        amount:
+          type: number
+          format: float
+          example: 250.00
+        dueDate:
+          type: string
+          format: date
+          example: '2024-08-15'
+        paymentType:
+          type: string
+          enum: [Credit Card, PayPal, Bank Transfer]
+          example: 'Credit Card'
+        status:
+          type: string
+          enum: [Pending, Paid, Overdue]
+          example: 'Pending'
+    InvoiceInput:
+      type: object
+      required:
+        - customerKey
+        - invoiceNo
+        - amount
+        - dueDate
+        - paymentType
+      properties:
+        customerKey:
+          type: string
+          format: email
+          description: The email of the customer this invoice belongs to.
+          example: 'ahmet.yilmaz@example.com'
+        invoiceNo:
+          type: string
+          description: A unique invoice number. Can be client-generated for creation, but server-side validation is recommended.
+          example: 'INV-002'
+        amount:
+          type: number
+          format: float
+          example: 150.75
+        dueDate:
+          type: string
+          format: date
+          example: '2024-09-01'
+        paymentType:
+          type: string
+          enum: [Credit Card, PayPal, Bank Transfer]
+          example: 'PayPal'
+    InvoiceUpdateInput:
+      type: object
+      required:
+        - customerKey
+        - amount
+        - dueDate
+        - paymentType
+      properties:
+        customerKey:
+          type: string
+          format: email
+          description: The email of the customer this invoice belongs to.
+          example: 'ahmet.yilmaz@example.com'
+        amount:
+          type: number
+          format: float
+          example: 150.75
+        dueDate:
+          type: string
+          format: date
+          example: '2024-09-01'
+        paymentType:
+          type: string
+          enum: [Credit Card, PayPal, Bank Transfer]
+          example: 'PayPal'
+    UserProfile:
+      type: object
+      properties:
+        name:
+          type: string
+          example: 'Ahmet'
+        surname:
+          type: string
+          example: 'Yılmaz'
+        email:
+          type: string
+          format: email
+          readOnly: true
+          example: 'ahmet.yilmaz@example.com'
+        avatarUrl:
+          type: string
+          format: url
+          example: 'https://placehold.co/100x100.png'
+    UserProfileInput:
+      type: object
+      properties:
+        name:
+          type: string
+        surname:
+          type: string
+        avatar:
+          type: string
+          format: binary
+          description: New avatar photo to upload.
+    Permission:
+      type: object
+      properties:
+        module:
+          type: string
+          enum: [Customers, Invoices, Settings]
+        permissions:
+          type: object
+          properties:
+            view:
+              type: boolean
+            create:
+              type: boolean
+            edit:
+              type: boolean
+            delete:
+              type: boolean
+    Group:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+          example: 'Administrators'
+        members:
+          type: array
+          items:
+            type: string
+            format: email
+            example: 'ahmet.yilmaz@example.com'
+
+    

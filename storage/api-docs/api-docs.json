@@ -1,0 +1,1035 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "FinanceFlow API",
+        "description": "API for managing invoices, customers, and user settings for the FinanceFlow application.",
+        "version": "1.0.0"
+    },
+    "paths": {
+        "/api/customers": {
+            "get": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Get all customers",
+                "operationId": "f4bd4899e4f693a3824fdfdb180a1483",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Fuzzy search term for customers.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Filter customers created from this date.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "Filter customers created up to this date.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of customers",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Customer"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "post": {
+                "tags": [
+                    "Customers"
+                ],
+                "summary": "Create a new customer",
+                "operationId": "6aaaa0c0184102ad9017bed9db7c19ef",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/CustomerInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Customer created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Customer"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/invoices": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get all invoices",
+                "operationId": "f6bfbb2f42239b1a42dd1bf248dbfe38",
+                "parameters": [
+                    {
+                        "name": "search",
+                        "in": "query",
+                        "description": "Fuzzy search term for invoices.",
+                        "required": false,
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Filter invoices with due date from this date.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "Filter invoices with due date up to this date.",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "A list of invoices",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Invoice"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Create a new invoice",
+                "operationId": "af4a99f100c05a7b2326ffe4a60b202c",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InvoiceInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "Invoice created",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/invoices/{invoiceNo}": {
+            "get": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Get an invoice by number",
+                "operationId": "da95774d6857a1170c33a08a29f2f91c",
+                "parameters": [
+                    {
+                        "name": "invoiceNo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Invoice details",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Update an invoice",
+                "operationId": "1181852bc1d7a108874fddd5ed91e6a4",
+                "parameters": [
+                    {
+                        "name": "invoiceNo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/InvoiceUpdateInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Invoice updated",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/Invoice"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "delete": {
+                "tags": [
+                    "Invoices"
+                ],
+                "summary": "Delete an invoice",
+                "operationId": "ae9f5d0e68418d8a9d4f00ef28eaa76f",
+                "parameters": [
+                    {
+                        "name": "invoiceNo",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "string"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "Invoice deleted"
+                    },
+                    "404": {
+                        "description": "Invoice not found"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/login": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Login",
+                "operationId": "8a56e1d40218f3a8e836939c215427d3",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Successful login",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "token": {
+                                            "type": "string"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/api/logout": {
+            "post": {
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "User Logout",
+                "operationId": "378907ff8d4a07967c35645b3931ac60",
+                "responses": {
+                    "200": {
+                        "description": "Successful logout"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/dashboard": {
+            "get": {
+                "tags": [
+                    "Dashboard"
+                ],
+                "summary": "Get dashboard data",
+                "operationId": "0d52d8f342db7a64f3f53663e8a0c02f",
+                "parameters": [
+                    {
+                        "name": "startDate",
+                        "in": "query",
+                        "description": "Filter data from this date.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    },
+                    {
+                        "name": "endDate",
+                        "in": "query",
+                        "description": "Filter data up to this date.",
+                        "schema": {
+                            "type": "string",
+                            "format": "date"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Aggregated dashboard data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "summary": {
+                                            "$ref": "#/components/schemas/DashboardSummary"
+                                        },
+                                        "performanceChart": {
+                                            "$ref": "#/components/schemas/PerformanceChartData"
+                                        },
+                                        "paymentMethodsChart": {
+                                            "$ref": "#/components/schemas/PaymentMethodsChartData"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/profile": {
+            "get": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Get user profile",
+                "operationId": "002a00d52f12a4bf3e951427299e3154",
+                "responses": {
+                    "200": {
+                        "description": "User profile data",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserProfile"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "User Profile"
+                ],
+                "summary": "Update user profile",
+                "operationId": "20c776690e1ce6c6171c0b58a40b4f71",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "$ref": "#/components/schemas/UserProfileInput"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Profile updated successfully",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "$ref": "#/components/schemas/UserProfile"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/change-password": {
+            "post": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Change user password",
+                "operationId": "4d340906a9b79e70cdddc63898235faa",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "currentPassword",
+                                    "newPassword"
+                                ],
+                                "properties": {
+                                    "currentPassword": {
+                                        "type": "string"
+                                    },
+                                    "newPassword": {
+                                        "type": "string"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password changed successfully"
+                    },
+                    "400": {
+                        "description": "Bad request (e.g., incorrect current password)"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/permissions": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get module permissions",
+                "operationId": "f7ee4175410403402e77129c6da7f069",
+                "responses": {
+                    "200": {
+                        "description": "A list of module permissions",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Permission"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update module permissions",
+                "operationId": "0f42c449c39cb8f3c8e460aa9bb34b5e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Permission"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Permissions updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/settings/groups": {
+            "get": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Get user groups",
+                "operationId": "903482968a9fe0d1a9a7266b3c3b94a1",
+                "responses": {
+                    "200": {
+                        "description": "A list of user groups",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "type": "array",
+                                    "items": {
+                                        "$ref": "#/components/schemas/Group"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "put": {
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Update user groups",
+                "operationId": "cea725787166d887661cb1eb8fee3032",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "type": "array",
+                                "items": {
+                                    "$ref": "#/components/schemas/Group"
+                                }
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Groups updated successfully"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "schemas": {
+            "Customer": {
+                "properties": {
+                    "customerType": {
+                        "type": "string",
+                        "enum": [
+                            "Bireysel",
+                            "Kurumsal"
+                        ]
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "createdAt": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "tckn": {
+                        "type": "string"
+                    },
+                    "vkn": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "CustomerInput": {
+                "required": [
+                    "customerType",
+                    "name",
+                    "email",
+                    "phone",
+                    "address"
+                ],
+                "properties": {
+                    "customerType": {
+                        "type": "string",
+                        "enum": [
+                            "Bireysel",
+                            "Kurumsal"
+                        ]
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "phone": {
+                        "type": "string"
+                    },
+                    "address": {
+                        "type": "string"
+                    },
+                    "tckn": {
+                        "type": "string"
+                    },
+                    "vkn": {
+                        "type": "string"
+                    }
+                },
+                "type": "object"
+            },
+            "Invoice": {
+                "properties": {
+                    "invoiceNo": {
+                        "type": "string"
+                    },
+                    "customerKey": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "dueDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "paymentType": {
+                        "type": "string",
+                        "enum": [
+                            "Credit Card",
+                            "PayPal",
+                            "Bank Transfer"
+                        ]
+                    },
+                    "status": {
+                        "type": "string",
+                        "enum": [
+                            "Pending",
+                            "Paid",
+                            "Overdue"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "InvoiceInput": {
+                "required": [
+                    "customerKey",
+                    "invoiceNo",
+                    "amount",
+                    "dueDate",
+                    "paymentType"
+                ],
+                "properties": {
+                    "customerKey": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "invoiceNo": {
+                        "type": "string"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "dueDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "paymentType": {
+                        "type": "string",
+                        "enum": [
+                            "Credit Card",
+                            "PayPal",
+                            "Bank Transfer"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "InvoiceUpdateInput": {
+                "required": [
+                    "customerKey",
+                    "amount",
+                    "dueDate",
+                    "paymentType"
+                ],
+                "properties": {
+                    "customerKey": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "amount": {
+                        "type": "number",
+                        "format": "float"
+                    },
+                    "dueDate": {
+                        "type": "string",
+                        "format": "date"
+                    },
+                    "paymentType": {
+                        "type": "string",
+                        "enum": [
+                            "Credit Card",
+                            "PayPal",
+                            "Bank Transfer"
+                        ]
+                    }
+                },
+                "type": "object"
+            },
+            "UserProfile": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "email": {
+                        "type": "string",
+                        "format": "email"
+                    },
+                    "avatarUrl": {
+                        "type": "string",
+                        "format": "url"
+                    }
+                },
+                "type": "object"
+            },
+            "UserProfileInput": {
+                "properties": {
+                    "name": {
+                        "type": "string"
+                    },
+                    "surname": {
+                        "type": "string"
+                    },
+                    "avatar": {
+                        "type": "string",
+                        "format": "binary"
+                    }
+                },
+                "type": "object"
+            },
+            "Permission": {
+                "properties": {
+                    "module": {
+                        "type": "string",
+                        "enum": [
+                            "Customers",
+                            "Invoices",
+                            "Settings"
+                        ]
+                    },
+                    "permissions": {
+                        "properties": {
+                            "view": {
+                                "type": "boolean"
+                            },
+                            "create": {
+                                "type": "boolean"
+                            },
+                            "edit": {
+                                "type": "boolean"
+                            },
+                            "delete": {
+                                "type": "boolean"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "Group": {
+                "properties": {
+                    "id": {
+                        "type": "string",
+                        "format": "uuid"
+                    },
+                    "name": {
+                        "type": "string"
+                    },
+                    "members": {
+                        "type": "array",
+                        "items": {
+                            "type": "string",
+                            "format": "email"
+                        }
+                    }
+                },
+                "type": "object"
+            },
+            "DashboardSummary": {
+                "properties": {
+                    "pending": {
+                        "properties": {
+                            "amount": {
+                                "type": "number",
+                                "format": "float"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "paid": {
+                        "properties": {
+                            "amount": {
+                                "type": "number",
+                                "format": "float"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    },
+                    "overdue": {
+                        "properties": {
+                            "amount": {
+                                "type": "number",
+                                "format": "float"
+                            },
+                            "count": {
+                                "type": "integer"
+                            }
+                        },
+                        "type": "object"
+                    }
+                },
+                "type": "object"
+            },
+            "PerformanceChartData": {
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "status": {
+                            "type": "string",
+                            "enum": [
+                                "Pending",
+                                "Paid",
+                                "Overdue"
+                            ]
+                        },
+                        "total": {
+                            "type": "number",
+                            "format": "float"
+                        }
+                    },
+                    "type": "object"
+                }
+            },
+            "PaymentMethodsChartData": {
+                "type": "array",
+                "items": {
+                    "properties": {
+                        "name": {
+                            "type": "string",
+                            "enum": [
+                                "Credit Card",
+                                "PayPal",
+                                "Bank Transfer"
+                            ]
+                        },
+                        "count": {
+                            "type": "integer"
+                        }
+                    },
+                    "type": "object"
+                }
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Customers",
+            "description": "Customers"
+        },
+        {
+            "name": "Invoices",
+            "description": "Invoices"
+        },
+        {
+            "name": "Authentication",
+            "description": "Authentication"
+        },
+        {
+            "name": "Dashboard",
+            "description": "Dashboard"
+        },
+        {
+            "name": "User Profile",
+            "description": "User Profile"
+        },
+        {
+            "name": "Settings",
+            "description": "Settings"
+        }
+    ]
+}
